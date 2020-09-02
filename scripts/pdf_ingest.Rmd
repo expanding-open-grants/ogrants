@@ -101,7 +101,33 @@ See ogrants repo.
 
 ## Some local example queries
 
-TODO
+### from a URL to a pdf, create a document
+
+```{r helper function to construct body}
+make_body_attach <- function(binary_dat)
+{
+  paste0('{\n  "fulltext": "', base64enc::base64encode(binary_dat), '"\n}')
+}
+```
+
+```{r deposit sample pdf}
+# retrieve sample pdf
+link <- "https://www.niaid.nih.gov/sites/default/files/K01-Lilliam-Ambroggio-Application.pdf"
+resp <- httr::GET(link)
+binary_dat <- httr::content(resp, "raw")
+body_attach <- make_body_attach(binary_dat)
+
+# create a document and attach data
+docs_create(es, "ogrants", id = 2, body = list(title = "New title"))
+pipeline_attachment(es, index = "ogrants", id = "2", pipeline = "pdfin", body_attach)
+```
+
+```{r check status of sample pdf}
+status <- docs_get(es, index = "ogrants", id = 2)
+str(status)
+```
+
+
 
 ## Connect to online ES instance
 
