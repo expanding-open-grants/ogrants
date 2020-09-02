@@ -1,0 +1,30 @@
+<script src="https://unpkg.com/mustache@latest"></script>
+<script src="{{ site.baseurl }}/public/jquery-3.3.1.min.js"></script>
+<script src="{{ site.baseurl }}/public/search.js"></script>
+
+<script id="grantListTemplate" type="x-tmpl-mustache">
+{% raw %}
+<p class="searchSummary">Found {{ count }} results.</p>
+
+<ul class="grantList">
+{{#grants}}
+    <li><h3>{{ title }}</h3>
+        <p class="grantAuthor">by {{ author }}</p>
+        <p class="grantStatus">{{ status }}</p>
+        <p class="grantScore">Score: {{ score }}</p>
+    </li>
+{{/grants}}
+</ul>
+{% endraw %}
+</script>
+
+<div class="wrap">
+    <form class="search">
+       <input id="searchTerm" type="text" class="searchTerm" placeholder="What are you looking for?" required>
+       <button type="submit" class="searchButton" id="grantSearch">
+         <i class="fa fa-search" aria-hidden="true"></i>
+      </button>
+    </form>
+</div>
+
+<div id="searchResults"></div>
