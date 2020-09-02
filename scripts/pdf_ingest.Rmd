@@ -1,0 +1,158 @@
+---
+title: "Open Grants PDF Ingestion on Elasticsearch"
+author: "Daniel Nüst"
+date: "9/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+This document is not intended to be knitted as full, but to document a step-by-step process.
+Therefore chunks are not evaluated by default.
+
+Using the [`elastic`](https://docs.ropensci.org/elastic/) R package.
+
+```{r libraries}
+library("elastic")
+```
+
+## Start local Elasticsearch
+
+From the root of the `ogrants` project, run
+
+```bash
+docker build --tag ogrants .
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" ogrants
+```
+
+## Connect
+
+```{r connect}
+es <- connect()
+```
+
+## Set up ingest pipeline
+
+- https://www.elastic.co/guide/en/elasticsearch/plugins/current/using-ingest-attachment.html
+- https://stackoverflow.com/questions/37861279/how-to-index-a-pdf-file-in-elasticsearch-5-0-0-with-ingest-attachment-plugin
+- https://docs.ropensci.org/elastic/reference/ingest.html
+
+We want the following as R command:
+
+```bash
+PUT _ingest/pipeline/attachment
+{
+  "description" : "Extract attachment information",
+  "processors" : [
+    {
+      "attachment" : {
+        "field" : "data",
+        "indexed_chars" : -1
+      }
+    }
+  ]
+}
+```
+
+```{r pipeline}
+boddy <- '{
+  "description" : "Extract attachment information",
+  "version" : 1,
+  "processors" : [
+    {
+      "attachment" : {
+        "field": "fulltext",
+        "indexed_chars" : -1
+      }
+    }
+  ]
+}'
+pipeline_create(es, id = 'pdfin', body = boddy)
+
+body_attach <- '{
+  "fulltext": "e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0="
+}'
+
+if (!index_exists(es, "ogrants")) index_create(es, "ogrants")
+docs_create(es, "ogrants", id = 1, body = list(title = "New title"))
+
+pipeline_attachment(es, index = "ogrants", id = "1", pipeline = "pdfin", body_attach)
+pipeline_get(es, id = "pdfin")
+```
+```{r pipeline2}
+pipeline_get(es, "pdfin")
+```
+```{r pipeline2}
+docs_get(es, index = "ogrants", id = 1)
+```
+
+## Get example PDF
+
+See ogrants repo.
+
+## Convert ogrants record into JSON
+
+1. read yaml header with `yaml`
+2. read PDF as base64
+3. construct requests (see above) to create doc and attachment
+4. query document - the full text should be in a plain text field
+
+## Some local example queries
+
+### from a URL to a pdf, create a document
+
+```{r helper function to construct body}
+make_body_attach <- function(binary_dat)
+{
+  paste0('{\n  "fulltext": "', base64enc::base64encode(binary_dat), '"\n}')
+}
+```
+
+```{r deposit sample pdf}
+# retrieve sample pdf
+link <- "https://www.niaid.nih.gov/sites/default/files/K01-Lilliam-Ambroggio-Application.pdf"
+resp <- httr::GET(link)
+binary_dat <- httr::content(resp, "raw")
+body_attach <- make_body_attach(binary_dat)
+
+# create a document and attach data
+docs_create(es, "ogrants", id = 2, body = list(title = "New title"))
+pipeline_attachment(es, index = "ogrants", id = "2", pipeline = "pdfin", body_attach)
+```
+
+```{r check status of sample pdf}
+status <- docs_get(es, index = "ogrants", id = 2)
+str(status)
+```
+
+
+
+## Connect to online ES instance
+
+Set up credentials in `.Renviron` file for this project with `usethis::edit_r_environ("project"); Sys.chmod(".Renviron", mode = "0400")`.
+Then you can read the ID and KEY from the environment variables.
+
+[If we want to share passwords more securely in the future, try out [`keyring`](https://cran.r-project.org/web/packages/httr/vignettes/secrets.html).]
+
+```{r passwords}
+#Sys.getenv("OGRANTS_ES_USER_READ_ID")
+#Sys.getenv("OGRANT_ES_USER_READ_KEY")
+id = Sys.getenv("OGRANTS_ES_USER_FULL_ID")
+key = Sys.getenv("OGRANTS_ES_USER_FULL_KEY")
+```
+
+- https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-upload-data.html
+- https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-ac.html
+
+```{r connect_public}
+library("elastic")
+es <- connect(host = "search-open-grants-vac5xkmdgahhvqfohcmkvxrysa.eu-west-1.es.amazonaws.com", user = id, pwd = key, transport_schema = "http")
+
+elastic::cat_(conn = es)
+elastic::Search(es, q = "test")
+
+elastic::nodes_info(es)
+```
+

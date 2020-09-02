@@ -3,9 +3,10 @@ _site
 .jekyll-metadata
 *~
 .jekyll-cache/
+.Rproj.user
 
-scripts/.Renviron
+scripts/.Rproj.user/
 
 scripts/.Rhistory
 
-scripts/.Rproj.user/
+scripts/.Renviron
