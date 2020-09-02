@@ -3,6 +3,7 @@ _site
 .jekyll-metadata
 *~
 .jekyll-cache/
+.Rproj.user
 
 scripts/.Rproj.user/
 

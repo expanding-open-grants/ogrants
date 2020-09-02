@@ -1,0 +1,105 @@
+---
+title: "Open Grants PDF Ingestion on Elasticsearch"
+author: "Daniel Nüst"
+date: "9/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+This document is not intended to be knitted as full, but to document a step-by-step process.
+Therefore chunks are not evaluated by default.
+
+Using the [`elastic`](https://docs.ropensci.org/elastic/) R package.
+
+```{r libraries}
+library("elastic")
+```
+
+## Start local Elasticsearch
+
+From the root of the `ogrants` project, run
+
+```bash
+docker build --tag ogrants .
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" ogrants
+```
+
+## Connect
+
+```{r connect}
+es <- connect()
+```
+
+## Set up ingest pipeline
+
+- https://www.elastic.co/guide/en/elasticsearch/plugins/current/using-ingest-attachment.html
+- https://stackoverflow.com/questions/37861279/how-to-index-a-pdf-file-in-elasticsearch-5-0-0-with-ingest-attachment-plugin
+- https://docs.ropensci.org/elastic/reference/ingest.html
+
+We want the following as R command:
+
+```bash
+PUT _ingest/pipeline/attachment
+{
+  "description" : "Extract attachment information",
+  "processors" : [
+    {
+      "attachment" : {
+        "field" : "data",
+        "indexed_chars" : -1
+      }
+    }
+  ]
+}
+```
+
+```{r pipeline}
+boddy <- '{
+  "description" : "Extract attachment information",
+  "version" : 1,
+  "processors" : [
+    {
+      "attachment" : {
+        "field": "fulltext",
+        "indexed_chars" : -1
+      }
+    }
+  ]
+}'
+pipeline_create(es, id = 'pdfin', body = boddy)
+
+body_attach <- '{
+  "fulltext": "e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0="
+}'
+
+if (!index_exists(es, "ogrants")) index_create(es, "ogrants")
+docs_create(es, "ogrants", id = 1, body = list(title = "New title"))
+
+pipeline_attachment(es, index = "ogrants", id = "1", pipeline = "pdfin", body_attach)
+pipeline_get(es, id = "pdfin")
+```
+```{r pipeline2}
+pipeline_get(es, "pdfin")
+```
+```{r pipeline2}
+docs_get(es, index = "ogrants", id = 1)
+```
+
+## Get example PDF
+
+See ograts repo.
+
+## Convert ogrants record into JSON
+
+1. read yaml header with `yaml`
+2. read PDF as base64
+3. construct requests (see above) to create doc and attachment
+4. query document - the full text should be in a plain text field
+
+## Some example queries
+
+TODO
+
