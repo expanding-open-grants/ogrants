@@ -1,3 +1,5 @@
+---
+---
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
@@ -7,17 +9,46 @@
  <updated>{{ site.time | date_to_xmlschema }}</updated>
  <id>{{ site.url }}</id>
  <author>
-   <name>{{ site.author.name }}</name>
-   <email>{{ site.author.email }}</email>
+   <name>{{ site.title }}</name>
+   {% comment %}<email>{{ site.author.email }}</email>{% endcomment %}
  </author>
 
- {% for post in site.posts %}
+ {% for grant in site.grants %}
  <entry>
-   <title>{{ post.title }}</title>
-   <link href="{{ site.url }}{{ post.url }}"/>
-   <updated>{{ post.date | date_to_xmlschema }}</updated>
-   <id>{{ site.url }}{{ post.id }}</id>
-   <content type="html">{{ post.content | xml_escape }}</content>
+   <title>{{ grant.title | xml_escape }}</title>
+   <link href="{{ grant.url | absolute_url }}"/>
+   <updated>{{ grant.year | date_to_xmlschema }}</updated>
+   <id>{{ grant.path | slice: 8, 99 | replace: '.md', '' }}</id>
+
+   <content type="html">
+      &lt;strong&gt;Author:&lt;/strong&gt; {{ grant.author | xml_escape }}
+      {% if grant.ORCID %}
+      ORCID: https://orcid.org/{{ grant.ORCID }}
+      {% endif %}
+
+      &lt;/ br&gt;
+      &lt;strong&gt;Year:&lt;/strong&gt; {{ grant.year }}
+  
+      &lt;/ br&gt;
+      &lt;strong&gt;Funding Source:&lt;/strong&gt; {{ grant.funder | xml_escape }}{% if grant.program %} ({{ grant.program | xml_escape }}){% endif %}
+
+      &lt;/ br&gt;
+      &lt;strong&gt;Funded:&lt;/strong&gt; {% if grant.status == 'funded' or grant.status == 'partially funded' %}Yes{% elsif grant.status == 'unfunded' or grant.status == 'not funded' %}No{% else %}?{% endif %}
+
+      &lt;/ br&gt;
+      &lt;strong&gt;Grant Documents:&lt;/strong&gt;
+      &lt;ul&gt;
+      {% for link in grant.link %}
+        {% if grant.link_name %}
+          &lt;li&gt;{{ link | xml_escape }} ({{ grant.link_name[forloop.index0] }})&lt;/li&gt;
+        {% elsif forloop.length == 1 %}
+          &lt;li&gt;{{ link | xml_escape }} (Proposal)&lt;/li&gt;
+        {% else %}
+          &lt;li&gt;{{ link | xml_escape }} (Document {{ forloop.index }})&lt;/li&gt;
+        {% endif %}
+      {% endfor %}
+      &lt;/ul&gt;
+  </content>
  </entry>
  {% endfor %}
 
