@@ -18,7 +18,7 @@ $(document).ready(function() {
         contentType: 'application/json'
     })
     .done(function(response) {
-        $('#count').html(response._all.total.docs.count);
+        $('.numgrant').html(response._all.total.docs.count);
     });
 
     $('#endpoint').html(endpoint);
