@@ -2,5 +2,5 @@
 layout: none
 search: exclude
 ---
-id,year,funder,program,url,title,author,link,status{% for grant in site.grants %}
-{{ grant.path | slice: 8, 99 | replace: '.md', '' }},{{ grant.year }},{{ grant.funder }},"{{ grant.program }}",{{ grant.url | absolute_url }},"{{ grant.title | strip_newlines }}","{{ grant.author }}",'{{ grant.link | replace: '-', '' | strip_newlines }}',"{{ grant.discipline }}",{{ grant.status }}{% endfor %}
+id,year,funder,program,url,title,author,link,discipline,status{% for grant in site.grants %}
+{{ grant.path | slice: 8, 99 | replace: '.md', '' }},{{ grant.year }},{{ grant.funder }},"{{ grant.program }}",{{ grant.url | absolute_url }},"{{ grant.title | strip_newlines }}","{{ grant.author }}",'{{ grant.link | strip_newlines }}',"{{ grant.discipline }}",{{ grant.status }}{% endfor %}
