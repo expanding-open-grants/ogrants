@@ -90,7 +90,7 @@ docs_get(es, index = "ogrants", id = 1)
 
 ## Get example PDF
 
-See ograts repo.
+See ogrants repo.
 
 ## Convert ogrants record into JSON
 
@@ -99,7 +99,34 @@ See ograts repo.
 3. construct requests (see above) to create doc and attachment
 4. query document - the full text should be in a plain text field
 
-## Some example queries
+## Some local example queries
 
 TODO
+
+## Connect to online ES instance
+
+Set up credentials in `.Renviron` file for this project with `usethis::edit_r_environ("project"); Sys.chmod(".Renviron", mode = "0400")`.
+Then you can read the ID and KEY from the environment variables.
+
+[If we want to share passwords more securely in the future, try out [`keyring`](https://cran.r-project.org/web/packages/httr/vignettes/secrets.html).]
+
+```{r passwords}
+#Sys.getenv("OGRANTS_ES_USER_READ_ID")
+#Sys.getenv("OGRANT_ES_USER_READ_KEY")
+id = Sys.getenv("OGRANTS_ES_USER_FULL_ID")
+key = Sys.getenv("OGRANTS_ES_USER_FULL_KEY")
+```
+
+- https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-upload-data.html
+- https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-ac.html
+
+```{r connect_public}
+library("elastic")
+es <- connect(host = "search-open-grants-vac5xkmdgahhvqfohcmkvxrysa.eu-west-1.es.amazonaws.com", user = id, pwd = key, transport_schema = "http")
+
+elastic::cat_(conn = es)
+elastic::Search(es, q = "test")
+
+elastic::nodes_info(es)
+```
 

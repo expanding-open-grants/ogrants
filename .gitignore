@@ -8,3 +8,5 @@ _site
 scripts/.Rproj.user/
 
 scripts/.Rhistory
+
+scripts/.Renviron
