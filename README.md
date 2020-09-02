@@ -64,6 +64,13 @@ twitter: ethanwhite
 This can be submitted along with the grant information if you're using an issue or email.
 If you're submitting a pull request it should be placed in a file named `lastname_firstname.md` in the `_authors` directory.
 
+## Build locally
+
+```bash
+bundle install
+bundle exec jekyll serve --incremental
+```
+
 ## Acknowledgments
 
 Development of this site is supported by the [Gordon and Betty Moore Foundation](https://www.moore.org/)'s [Data-Driven Discovery Initiation](https://www.moore.org/initiative-strategy-detail?initiativeId=data-driven-discovery) through [Grant GBMF4563](https://www.moore.org/grant-detail?grantId=GBMF4563) to Ethan White.
