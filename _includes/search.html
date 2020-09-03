@@ -8,9 +8,14 @@
 
 <ul class="grantList">
 {{#grants}}
-    <li><h3>{{ title }}</h3>
-        <p class="grantAuthor">by {{ author }}</p>
-        <p class="grantStatus">{{ status }}</p>
+    <li><h3><a href="{{ url }}" title="{{ title }}">{{ title }}</a></h3>
+        <p class="grantAuthor">by {{ author }} in {{ year }}</p>
+        <p class="grantFunderProgram">Funder: {{ funder }}{{#program}}<br />Program: {{ program }}{{/program}}</p>
+        <p class="links">
+            <a href="{{ link }}">{{ link }}</a>
+        </p>
+        <p class="grantDiscipline">{{#discipline}}Discipline: {{ discipline }}</p>{{/discipline}}
+        <p class="grantStatus">Status: {{ status }}</p>
         <p class="grantScore">Score: {{ score }}</p>
     </li>
 {{/grants}}

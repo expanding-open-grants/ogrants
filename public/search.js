@@ -7,11 +7,12 @@ var data = {
     };
 
 const endpoint = "http://localhost:9200/";
+const index = "ogrants"
 
 $(document).ready(function() {
     $.ajax({
         method: "GET",
-        url: endpoint + "_stats",
+        url: endpoint + index + "/_stats",
         crossDomain: true,  
         async: false,
         dataType : 'json',
@@ -30,7 +31,7 @@ $(document).ready(function() {
 
         $.ajax({
             method: "GET",
-            url: endpoint + "_search?pretty=true&q=" + query,
+            url: endpoint + index + "/_search?pretty=true&size=999&q=" + query,
             crossDomain: true,  
             async: false,
             //data: JSON.stringify(data),
@@ -45,9 +46,15 @@ $(document).ready(function() {
             };
             result.grants = response.hits.hits.map(hit => {
                 return({
-                    "title": hit._source.play_name,
-                    "author": hit._source.speaker,
-                    "status": hit._source.speech_number,
+                    "title":  hit._source.title,
+                    "author": hit._source.author,
+                    "status": hit._source.status,
+                    "year": hit._source.year,
+                    "funder": hit._source.funder,
+                    "program": hit._source.program,
+                    "link": hit._source.link,
+                    "url": hit._source.url,
+                    "discipline": hit._source.discipline,
                     "score": hit._score
                 });
             });
