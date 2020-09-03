@@ -6,10 +6,11 @@
     </div>
 
     <ul class="sidebar-nav">
+      
       <li class="sidebar-nav-item{% if page.title == "Home" %} active{% endif %}">
-        <a href="/">Home</a>
+        <a href= {{ "/" | relative_url }} >Home</a>
       </li>
-
+ 
       {% comment %}
         The code below dynamically generates a sidebar nav of pages with
         `layout: page` in the front-matter. See readme for usage.
@@ -20,7 +21,7 @@
         {% if node.title != null %}
           {% if node.layout == "page" %}
             <li class="sidebar-nav-item{% if page.url == node.url %} active{% endif %}">
-              <a href="{{ node.url }}">{{ node.title }}</a>
+              <a href="{{ node.url | relative_url }}">{{ node.title }}</a>
             </li>
           {% endif %}
         {% endif %}
