@@ -7,11 +7,13 @@ Scripts and functions to process the open grants data and help feed it into Elas
 *The following shell commands assume a working directory that is the root folder, and not the `R/` folder that this README resides in.*
 
 To run the PDF ingestion loop, use
+
 ```bash
 Rscript R/ingest-grant-pdfs.R
 ```
 
 To run the example PDF retrieval script, use
+
 ```bash
 Rscript R/example_retrieve-pdf.R
 ```

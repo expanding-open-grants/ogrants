@@ -80,6 +80,7 @@ docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" ogrants
 ```
 
 ### To index locally
+
 - Please have elasticsearch running locally, as mentioned above
 - Please install the following dependences after installing python3 (if not already on the machine):
 - `pip3 install csv`, `pip3 install json`, `pip3 install elasticsearch`
