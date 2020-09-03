@@ -25,13 +25,14 @@ def make_json(csvFilePath, jsonFilePath):
 
 def index(es,dataset,index="ogrants"):
 	bulk_size = 500
+	if not(es.indices.exists(index)):
+		es.indices.create(index=index)
 	for i in range(0, len(dataset), bulk_size):
 		body = []
 		for rec in dataset[i:i + bulk_size]:
 			body.append({
 				'index': {
 					'_index': index,
-                    '_type': 'rec',
                     '_id': rec['id']
 					}
 				})
