@@ -2,6 +2,20 @@
 
 Scripts and functions to process the open grants data and help feed it into Elasticsearch.
 
+# Usage
+
+*The following shell commands assume a working directory that is the root folder, and not the `R/` folder that this README resides in.*
+
+To run the PDF ingestion loop, use
+```bash
+Rscript R/ingest-grant-pdfs.R
+```
+
+To run the example PDF retrieval script, use
+```bash
+Rscript R/example_retrieve-pdf.R
+```
+
 # Package dependencies
 
 * `magrittr`
@@ -23,6 +37,5 @@ Scripts and functions to process the open grants data and help feed it into Elas
   - potentially resolved by fixing the Liquid syntax in `{repo root}/opengrants.csv`, or by reading in the output csv file and processing it better
 * integrating this with the `elastic` R package
   - some glue code already exists in the `docker` branch of this repo
-  - probably some modifications are necessary to incorporate more of the metadata fields from the csv file into Elasticsearch correctly
-  - wrapping the individual function calls into a loop to generate the initial data for Elasticsearch
+  - ~probably some modifications are necessary to incorporate more of the metadata fields from the csv file into Elasticsearch correctly~
   - future-proofing by caching data and/or automating the lookup of new entries

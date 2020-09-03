@@ -24,6 +24,9 @@ link <- grants_df$link[75]
 
 #### retrieving the binary data
 binary_dat <- get_binary_pdf_from_link(link)
+
 ## binary data can be written to a file to check, e.g.
-# writeBin(binary_data, file.path(tempdir(), "test.pdf"))
+dest <- file.path(tempdir(), "test.pdf")
+writeBin(binary_dat, dest)
+cat("Wrote a pdf to ", dest)
 
