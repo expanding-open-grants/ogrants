@@ -31,6 +31,12 @@ pipeline_create(ES, id = 'pdfin', body = boddy)
 # check if index exists
 if (!index_exists(ES, ES_index_name)) index_create(ES, ES_index_name)
 
+# attach function
+make_body_attach <- function(binary_dat)
+{
+  paste0('{\n  "fulltext": "', base64enc::base64encode(binary_dat), '"\n}')
+}
+
 ## loop over grants data
 for (i in seq_len(NROW(grants_df)))
 {
