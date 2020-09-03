@@ -136,19 +136,155 @@ Then you can read the ID and KEY from the environment variables.
 
 [If we want to share passwords more securely in the future, try out [`keyring`](https://cran.r-project.org/web/packages/httr/vignettes/secrets.html).]
 
-```{r passwords}
-#Sys.getenv("OGRANTS_ES_USER_READ_ID")
-#Sys.getenv("OGRANT_ES_USER_READ_KEY")
-id = Sys.getenv("OGRANTS_ES_USER_FULL_ID")
-key = Sys.getenv("OGRANTS_ES_USER_FULL_KEY")
-```
-
 - https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-upload-data.html
 - https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-ac.html
 
 ```{r connect_public}
 library("elastic")
-es <- connect(host = "search-open-grants-vac5xkmdgahhvqfohcmkvxrysa.eu-west-1.es.amazonaws.com", user = id, pwd = key, transport_schema = "http")
+
+id_pub <- Sys.getenv("OGRANTS_ES_USER_READ_ID")
+key_pub <- Sys.getenv("OGRANT_ES_USER_READ_KEY")
+
+scheme <- "https"
+# the following results in a connection refused error > need signing
+es_pub <- connect(host = "search-open-grants-vac5xkmdgahhvqfohcmkvxrysa.eu-west-1.es.amazonaws.com",
+                  port = "443", transport_schema = scheme,
+                  user = id_pub, pwd = key_pub)
+elastic::cat_(conn = es_pub)
+```
+
+- helper package from cloudyr project > https://cran.r-project.org/web/packages/aws.signature/
+- https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-request-signing.html
+- endpoint: https://search-open-grants-vac5xkmdgahhvqfohcmkvxrysa.eu-west-1.es.amazonaws.com/_cat
+
+```{r connect_signed}
+# install.packages("aws.signature", repos = c(cloudyr = "http://cloudyr.github.io/drat", getOption("repos")))
+library("aws.signature")
+library("httr")
+
+es_request <- function(server = "search-open-grants-vac5xkmdgahhvqfohcmkvxrysa",
+                       key,
+                       secret,
+                       verb = "GET",
+                       action = "/_search",
+                       query = list(`q` = "*"),
+                       service = "es",
+                       region = "eu-west-1",
+                       headers = c(),
+                       body = "") {
+  # following lines based on https://github.com/cloudyr/aws.alexa/blob/b421fca047c9d22d2b2e645e9052c45daa7e57fe/R/aws.alexa.package.R
+  hostname <- paste0(server, ".", region, ".", service, ".amazonaws.com")
+  current <- Sys.time()
+  header_timestamp <- format(current, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+  canonical_headers <- c(list(host = hostname,
+                              `x-amz-date` = header_timestamp),
+                         headers)
+
+  Sig <- signature_v4_auth(datetime = format(current, "%Y%m%dT%H%M%SZ", tz = "UTC"),
+                           region = region,
+                           service = service,
+                           verb = verb,
+                           action = action,
+                           query_args = query,
+                           canonical_headers = canonical_headers,
+                           request_body = body,
+                           key = key,
+                           secret = secret,
+                           session_token = NULL,
+                           verbose = TRUE)
+
+  headers <- c(headers,
+               `x-amz-date` = header_timestamp,
+               `x-amz-content-sha256` = Sig$BodyHash,
+               #if (!is.null(session_token) && session_token != "") { headers[["x-amz-security-token"]] <- session_token }
+               `Authorization` = Sig[["SignatureHeader"]])
+
+  browser()
+  res <- httr::RETRY(verb = verb,
+                     url = httr::modify_url(url = hostname, scheme = scheme, hostname = hostname, path = action),
+                     httr::add_headers(headers),
+                     query = query,
+                     times = 3,
+                     terminate_on = c(403, 404),
+                     terminate_on_success = TRUE)
+  res
+}
+
+library("crul")
+es_request_crul <- function(conn,
+                            # TODO: get server, service, and region from the connection object?
+                            server = "search-open-grants-vac5xkmdgahhvqfohcmkvxrysa",
+                            verb = "GET",
+                            action = "/_search",
+                            query = list(`q` = "*"),
+                            service = "es",
+                            region = "eu-west-1",
+                            headers = c(),
+                            body = "") {
+  # following lines based on https://github.com/cloudyr/aws.alexa/blob/b421fca047c9d22d2b2e645e9052c45daa7e57fe/R/aws.alexa.package.R
+  hostname <- paste0(server, ".", region, ".", service, ".amazonaws.com")
+  current <- Sys.time()
+  header_timestamp <- format(current, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+  canonical_headers <- c(list(host = hostname,
+                              `x-amz-date` = header_timestamp),
+                         headers)
+
+  Sig <- signature_v4_auth(datetime = format(current, "%Y%m%dT%H%M%SZ", tz = "UTC"),
+                           region = region,
+                           service = service,
+                           verb = verb,
+                           action = action,
+                           query_args = query,
+                           canonical_headers = canonical_headers,
+                           request_body = body,
+                           key = conn$user,
+                           secret = conn$pwd,
+                           session_token = NULL,
+                           verbose = TRUE)
+
+  headers <- c(headers,
+               `x-amz-date` = header_timestamp,
+               `x-amz-content-sha256` = Sig$BodyHash,
+               #if (!is.null(session_token) && session_token != "") { headers[["x-amz-security-token"]] <- session_token }
+               `Authorization` = Sig[["SignatureHeader"]])
+
+  # based on https://github.com/ropensci/elastic/blob/03177398be3f6d1d4991f9796794bfe0380d56d0/R/httr-verbs.R#L26
+  # TODO add option to use body, see function check_iputs in above script
+  browser()
+  client <- crul::HttpClient$new(
+    #url = httr::modify_url(url = hostname, scheme = scheme, hostname = hostname, path = action),
+    url = paste0(conn$make_url(), action),
+    headers = c(conn$headers, headers),
+    opts = conn$opts)
+  res <- client$verb(verb = "retry",
+                     verb,
+                     query = query,
+                     times = 3,
+                     terminate_on = c(403, 404)
+                     )
+  elastic:::geterror(conn, res)
+  jsonlite::fromJSON(tt$parse("UTF-8"), FALSE)
+}
+```
+
+```{r request_public}
+response <- es_request(key = id_pub, secret = key_pub, query = list(`q` = "test"))
+httr::content(response)
+```
+Works!
+
+```{r request_public_crul}
+response <- es_request_crul(conn = es_pub)
+response
+```
+
+```{r request_full}
+id = Sys.getenv("OGRANTS_ES_USER_FULL_ID")
+key = Sys.getenv("OGRANTS_ES_USER_FULL_KEY")
+
+es <- connect(host = "search-open-grants-vac5xkmdgahhvqfohcmkvxrysa.eu-west-1.es.amazonaws.com",
+              port = "443", transport_schema = "https",
+              user = id, pwd = key)
 
 elastic::cat_(conn = es)
 elastic::Search(es, q = "test")
