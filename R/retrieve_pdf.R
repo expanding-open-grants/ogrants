@@ -14,7 +14,22 @@ resolves_into_pdf <- function(resp)
 }
 
 # try to resolve a URL into a binary pdf stream
-get_binary_pdf_from_link <- function(link)
+get_binary_pdf_from_link <- function(link, skip_on_error = TRUE)
+{
+  dat <- NULL
+  tryCatch(dat <- retrieve_pdf_from_link(link), 
+           error = function(e) {
+             if (skip_on_error)
+             {
+               warning("skipping error")
+             } else {
+               e
+             }
+           })
+  return(dat)
+}
+
+retrieve_pdf_from_link <- function(link)
 {
   # access link
   link <- extract_raw_link(link)
@@ -31,10 +46,10 @@ get_binary_pdf_from_link <- function(link)
   # attempt to parse for a link to a pdf
   if (grepl("text/html", httr::headers(resp)$`content-type`)) {
     baseurl <- resp$url
-    links <- rvest::read_html(resp) %>%
+    links <- xml2::read_html(resp) %>%
       rvest::html_nodes("a") %>%
       rvest::html_attr("href") %>%
-      rvest::url_absolute(baseurl)
+      xml2::url_absolute(baseurl)
     
     # check for links that contain "pdf"
     pdf_link <- unique(grep("pdf", links, value = TRUE))
