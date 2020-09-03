@@ -73,9 +73,3 @@ retrieve_pdf_from_link <- function(link)
   
   stop("unable to resolve link")
 }
-
-# construct attachment JSON
-make_body_attach <- function(binary_dat)
-{
-  paste0('{\n  "fulltext": "', base64enc::base64encode(binary_dat), '"\n}')
-}
