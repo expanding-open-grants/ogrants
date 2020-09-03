@@ -46,14 +46,18 @@ def index(es,dataset,index="ogrants"):
 
 # Decide the two file paths according to your
 # computer system
-csvFilePath = r'ogrants.csv'
-jsonFilePath = r'ogrants.json'
+csvFilePath = r'_site/opengrants.csv'
+jsonFilePath = r'_site/ogrants.json'
 
 # Call the make_json function
 make_json(csvFilePath, jsonFilePath)
 
 data = {}
 client = Elasticsearch("http://localhost:9200")
-with open('ogrants.json') as f:
+
+client.indices.delete('ogrants')
+
+with open(jsonFilePath) as f:
 	data = json.load(f)
+
 index(client,data)
