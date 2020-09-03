@@ -1,8 +1,10 @@
-# Overview
+# Indexing of grant fulltext document
+
+## Overview
 
 Scripts and functions to process the open grants data and help feed it into Elasticsearch.
 
-# Usage
+## Usage
 
 *The following shell commands assume a working directory that is the root folder, and not the `R/` folder that this README resides in.*
 
@@ -18,7 +20,7 @@ To run the example PDF retrieval script, use
 Rscript R/example_retrieve-pdf.R
 ```
 
-# Package dependencies
+## Package dependencies
 
 * `magrittr`
 * `rvest`
@@ -27,12 +29,12 @@ Rscript R/example_retrieve-pdf.R
 * `elastic`
 * `readr`
 
-# File listing
+## File listing
 
 * `example_retrieve-pdf.R` - commented script demo-ing the functions to read in the opengrants.csv data table and resolve individual links into PDF streams
 * `retrieve_pdf.R` - function definitions to resolve links into PDF streams
 
-# TODO
+## TODO
 
 * deal with grants entries with multiple links:
   - this currently gets output with commas at https://expanding-open-grants.github.io/ogrants/opengrants.csv, which causes some problems reading the data in
