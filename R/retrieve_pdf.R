@@ -1,9 +1,4 @@
-# package dependencies
-#   magrittr
-#   rvest
-#   httr
-
-library(magrittr)
+`%>%` <- magrittr::`%>%`
 
 # trim trailing single quotes and square brackets
 extract_raw_link <- function(link)
@@ -11,13 +6,14 @@ extract_raw_link <- function(link)
   gsub("^['\\[]+|['\\]]+$", "", link, perl = TRUE)
 }
 
-# check 
+# check if result from httr::GET might be a pdf or binary stream
 resolves_into_pdf <- function(resp)
 {
   httr::status_code(resp) == 200 && 
     grepl("pdf|binary|octet", httr::headers(resp)$`content-type`)
 }
 
+# try to resolve a URL into a binary pdf stream
 get_binary_pdf_from_link <- function(link)
 {
   # access link
@@ -30,12 +26,7 @@ get_binary_pdf_from_link <- function(link)
   }
   
   # received a pdf
-  if (resolves_into_pdf(resp))
-  {
-    return(httr::content(resp, "raw"))
-    ## binary data can be written to a file to check:
-    # writeBin(binary_data, file.path(tempdir(), "test.pdf"))
-  }
+  if (resolves_into_pdf(resp)) { return(httr::content(resp, "raw")) }
   
   # attempt to parse for a link to a pdf
   if (grepl("text/html", httr::headers(resp)$`content-type`)) {
@@ -67,17 +58,3 @@ get_binary_pdf_from_link <- function(link)
   
   stop("unable to resolve link")
 }
-
-
-grants_df <- read.csv("data/opengrants.csv")
-
-xx <- grants_df$link[1]
-yy <- grants_df$link[4]
-zz <- "https://doi.org/10.5281/zenodo.1302495"
-
-
-get_pdf_from_link(xx)
-get_pdf_from_link(yy)
-
-
-
