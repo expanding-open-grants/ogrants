@@ -27,14 +27,14 @@ gems:
 exclude:
   - Gemfile
   - Gemfile.lock
+  - README.md
+  - scripts
 
 collections:
   grants:
     output: true
 
-
 # Site information
-
 title:            'Open Grants'
 url:              https://expanding-open-grants.github.io/ogrants/
 github:

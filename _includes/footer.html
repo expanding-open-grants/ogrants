@@ -1,14 +1,3 @@
 <footer>
-    <!-- Load and initialize DataTables -->
-    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/public/jquery.dataTables.min.css">
-    <script src="{{ site.baseurl }}/public/jquery-3.3.1.min.js"></script>
-    <script src="{{ site.baseurl }}/public/jquery.dataTables.min.js"></script>
-
-    <script type="text/javascript">
-        $(document).ready( function () {
-            $('#main_table').DataTable({
-                "pageLength": 100
-            });
-        } );
-    </script>
+    <p>Searching in <span class="numgrant"></span> grants at public Elasticsearch endpoint <span id="endpoint"></span>.</p>
 </footer>

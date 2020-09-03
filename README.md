@@ -64,6 +64,28 @@ twitter: ethanwhite
 This can be submitted along with the grant information if you're using an issue or email.
 If you're submitting a pull request it should be placed in a file named `lastname_firstname.md` in the `_authors` directory.
 
+## Developments
+
+### Local Elasticsearch in a container
+
+Docs/Notes:
+
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+- Using the OSS version
+- Using `7.7.1` because [7.x is the latest supported version on AWS ES service](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/what-is-amazon-elasticsearch-service.html).
+
+```bash
+docker build --tag ogrants .
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" ogrants
+```
+
+### To index locally
+
+- Please have elasticsearch running locally, as mentioned above
+- Please install the following dependences after installing python3 (if not already on the machine):
+- `pip3 install csv`, `pip3 install json`, `pip3 install elasticsearch`
+- Please run `python3 scripts/ogrants.py`
+
 ## Build locally
 
 ```bash
