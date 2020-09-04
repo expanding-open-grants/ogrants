@@ -35,6 +35,10 @@ link <- grants_df$link[69]
 link <- grants_df$link[123]
 # 'https://docs.google.com/file/d/0By0SDlWE5_VYV3hvS2FNSzFSSHUtbHlIWWhxUzFIQQ/'
 
+# example 8 - zenodo with multiple links
+link <- grants_df$link[144]
+# 'https://doi.org/10.5281/zenodo.1303986'
+
 #### retrieving the binary data
 binary_dat <- get_binary_pdf_from_link(link)
 
