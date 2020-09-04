@@ -7,16 +7,16 @@ source(here::here("R", "make_elasticsearch_doc.R"))
 ES_index_name <- "ogrants"
 
 ## get csv from website
-csv_path <- here::here("_site", "opengrants.csv")
-if (!file.exists(csv_path))
+grants_data <- here::here("_site", "opengrants.dat")
+if (!file.exists(grants_data))
 {
-  download.file("https://expanding-open-grants.github.io/ogrants/opengrants.csv",
-                csv_path)
+  download.file("https://expanding-open-grants.github.io/ogrants/opengrants.dat",
+                grants_data)
 }
-grants_df <- readr::read_csv(csv_path)
-attr(grants_df, "problems") <- NULL
-attr(grants_df, "spec") <- NULL
-attr(grants_df, "class") <- "data.frame"
+grants_df <- read.table(grants_data, header = TRUE, sep = "|")
+# attr(grants_df, "problems") <- NULL
+# attr(grants_df, "spec") <- NULL
+# attr(grants_df, "class") <- "data.frame"
 
 ES <- connect()
 
@@ -44,6 +44,7 @@ stash_id <- "temp"
 grants_list <- split(grants_df, seq(NROW(grants_df)))
 for (grant_info in grants_list)
 {
+  message(grant_info$id)
   body <- as.list(grant_info)
   make_doc(conn = ES, 
            index = ES_index_name, 

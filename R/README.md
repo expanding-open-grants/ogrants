@@ -27,7 +27,6 @@ Rscript R/example_retrieve-pdf.R
 * `httr`
 * `here`
 * `elastic`
-* `readr`
 
 ## File listing
 

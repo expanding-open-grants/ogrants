@@ -3,7 +3,7 @@
 # trim trailing single quotes and square brackets
 extract_raw_link <- function(link)
 {
-  gsub("^['\"\\[]+|['\"\\]]+$", "", link, perl = TRUE)
+  gsub("^[<'\"\\[]+|['>\"\\]]+$", "", link, perl = TRUE)
 }
 
 # check if result from httr::GET might be a pdf or binary stream

@@ -31,6 +31,7 @@ make_doc <- function(conn,
   body$url <- paste0(baseurl, body$url)
   body$url <- gsub("(?<!https:)//", "/", body$url, perl = TRUE)
   body$url <- gsub("(ogrants/){2,}", "ogrants/", body$url)
+  body$link <- strsplit(body$link, "><")[[1]][1] # get first link
   body$link <- extract_raw_link(body$link)
   
   # retrieve pdf (probably should be wrapped to timeout)
@@ -49,6 +50,9 @@ make_doc <- function(conn,
     # get content back
     body$attachment <- pdf_content$`_source`$attachment
   }
+  
+  # coerce NAs
+  body[is.na(body)] <- NA
   
   # add document
   docs_create(conn, 
