@@ -3,7 +3,7 @@
 # trim trailing single quotes and square brackets
 extract_raw_link <- function(link)
 {
-  gsub("^['\\[]+|['\\]]+$", "", link, perl = TRUE)
+  gsub("^['\"\\[]+|['\"\\]]+$", "", link, perl = TRUE)
 }
 
 # check if result from httr::GET might be a pdf or binary stream
@@ -46,6 +46,16 @@ retrieve_pdf_from_link <- function(link)
   # attempt to parse for a link to a pdf
   if (grepl("text/html", httr::headers(resp)$`content-type`)) {
     baseurl <- resp$url
+    
+    if (grepl("[docs|drive]\\.google\\.com", link))
+    {
+      gdoc_id <- gsub("^.+/([0-9a-zA-Z_]+)/$", "\\1", link)
+      link <- paste0("https://drive.google.com/u/0/uc?id=", gdoc_id, 
+                     "&export=download")
+      resp <- httr::GET(link)
+      if (resolves_into_pdf(resp)) { return(httr::content(resp, "raw")) }
+    }
+    
     links <- xml2::read_html(resp) %>%
       rvest::html_nodes("a") %>%
       rvest::html_attr("href") %>%
@@ -53,6 +63,11 @@ retrieve_pdf_from_link <- function(link)
     
     # check for links that contain "pdf"
     pdf_link <- unique(grep("pdf", links, value = TRUE))
+    if (length(pdf_link) > 1)
+    {
+      pdf_link <- grep("github\\.com\\/[^\\/]+\\/[^\\/]+\\/raw", 
+                       pdf_link, value = TRUE, perl = TRUE)
+    }
     if (length(pdf_link) == 1)
     {
       resp <- httr::GET(pdf_link)

@@ -48,7 +48,9 @@ for (grant_info in grants_list)
   make_doc(conn = ES, 
            index = ES_index_name, 
            body = body, 
-           stash_id = stash_id)
+           stash_id = stash_id, 
+           silent = TRUE)
 }
 
+docs_create(ES, ES_index_name, stash_id)
 docs_delete(ES, ES_index_name, stash_id)

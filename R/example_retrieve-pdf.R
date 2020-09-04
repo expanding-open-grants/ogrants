@@ -22,6 +22,19 @@ link <- grants_df$link[5]
 link <- grants_df$link[75]
 # 'https://doi.org/10.5281/zenodo.3236624'
 
+# example 5 - github
+link <- grants_df$link[14]
+# '[https://github.com/ybrandvain/GRFP/blob/master/Bird_NSF_Research_official.pdf
+
+# example 6 - figshare (not working)
+# there's some javascript redirect on the page
+link <- grants_df$link[69]
+# 'https://doi.org/10.6084/m9.figshare.5217382'
+
+# example 7 - google drive
+link <- grants_df$link[123]
+# 'https://docs.google.com/file/d/0By0SDlWE5_VYV3hvS2FNSzFSSHUtbHlIWWhxUzFIQQ/'
+
 #### retrieving the binary data
 binary_dat <- get_binary_pdf_from_link(link)
 
